@@ -17,99 +17,121 @@
   <script type="text/javascript">
     window.PLOTLYENV = window.PLOTLYENV || {};
 
-    // Data arrays
-    const dates = [
-      "2004-12-09","2005-12-02","2006-03-24","2007-07-02","2007-12-07",
-      "2008-06-30","2008-09-01","2009-02-10","2009-03-30","2010-04-25",
-      "2011-12-19","2012-01-14","2012-02-25","2012-12-08","2013-01-26",
-      "2014-01-29","2014-12-05","2014-12-06","2016-01-24","2017-05-24",
-      "2018-08-03","2019-01-03","2019-02-06","2020-03-20","2020-06-02",
-      "2021-02-02","2021-02-15","2021-02-16","2021-07-09","2021-12-16",
-      "2023-02-24","2024-08-02","2025-07-21"
-    ];
-
-    const titles = [
-      "Supporting Users and Troubleshooting a Microsoft Windows XP Operating System",
-      "Supporting Users and Troubleshooting Desktop Applications on a Microsoft Windows XP Operating System",
-      "Designing, Deploying and Managing a Network Solution for the Small and Medium-sized Business",
-      "Upgrading your MCDST Certification to MCITP Enterprise Support",
-      "TS: Microsoft Windows Mobile Designing, Implementing, and Managing",
-      "Windows Server 2008 Network Infrastructure, Configuring",
-      "TS: Windows Small Business Server 2008, Configuring",
-      "Managing and Maintaining a Microsoft Windows Server 2003 Environment",
-      "Implementing, Managing, and Maintaining a Microsoft Windows Server 2003 Network Infrastructure",
-      "TS: Windows 7, Configuring",
-      "TS: Upgrading your MCSA on Windows Server 2003 to Windows Server 2008, Technology Specialist",
-      "Pro: Windows Server 2008, Server Administrator",
-      "TS: Windows Server 2008 R2, Server Virtualization",
-      "Administering Office 365 for Small Business",
-      "Monitoring and Operating a Private Cloud with System Center 2012",
-      "Upgrading Your Skills to MCSA Windows Server 2012",
-      "Managing Office 365 Identities and Requirements",
-      "Enabling Office 365 Services",
-      "Recertification for MCSE: Private Cloud",
-      "Implementing Microsoft Azure Infrastructure Solutions",
-      "Microsoft Azure Administrator Certification Transition",
-      "Microsoft Azure Fundamentals",
-      "Microsoft 365 Fundamentals",
-      "Microsoft Power Platform Fundamentals",
-      "Microsoft Dynamics 365 Fundamentals",
-      "Introduction to Programming Using Python",
-      "Microsoft Azure AI Fundamentals",
-      "Microsoft Azure Administrator",
-      "Microsoft Azure Data Fundamentals",
-      "Microsoft Security, Compliance, and Identity Fundamentals",
-      "Microsoft Dynamics 365 Fundamentals (CRM)",
-      "Designing and Implementing a Microsoft Azure AI Solution",
-      "GitHub Foundations"
-    ];
-
-    const examNumbers = [
-      "271","272","282","621","500","642","653","290","291","680",
-      "648","646","659","324","246","417","346","347","981","533",
-      "AZ-102","AZ-900","MS-900","PL-900","MB-901","98-381","AI-900",
-      "AZ-104","DP-900","SC-900","MB-910","AI-102","GH-900"
-    ];
-
-    // Numeric indices 0–32 for color mapping
-    const colorIndices = Array.from({ length: dates.length }, (_, i) => i);
-
-    // Trace definition (gradient on dots, no color bar)
-    const trace = {
-      x: dates,
-      y: titles,
-      customdata: examNumbers,
-      mode: "markers",
-      marker: {
-        color: colorIndices,
-        colorscale: [[0, "#1f77b4"], [1, "#ff00ff"]],
-        cmin: 0,
-        cmax: dates.length - 1,  // 32
-        size: 12,
-        showscale: false         // Hides the color bar
-      },
-      hovertemplate:
-        "Passed Date: %{x}<br>" +
-        "Exam Title: %{y}<br>" +
-        "Exam Number: %{customdata}<extra></extra>"
-    };
-
-    // Layout definition
-    const layout = {
-      margin: { t: 20, l: 150, r: 50, b: 50 },
-      xaxis: {
-        title: "Passed Date",
-        type: "date",
-        tickformat: "%Y"
-      },
-      yaxis: {
-        title: "Exam Title",
-        automargin: true
+    // Function to parse CSV data
+    function parseCSV(csvText) {
+      const lines = csvText.trim().split('\n');
+      const headers = lines[0].split(',');
+      const data = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let j = 0; j < lines[i].length; j++) {
+          const char = lines[i][j];
+          
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        
+        if (values.length === headers.length) {
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header.trim().replace(/"/g, '')] = values[index].replace(/"/g, '');
+          });
+          data.push(row);
+        }
       }
-    };
+      
+      return data;
+    }
 
-    // Render the plot
-    Plotly.newPlot("exam-timeline", [trace], layout, { responsive: true });
+    // Function to create the plot with data
+    function createPlot(examData) {
+      // Sort by date to ensure proper chronological order
+      examData.sort((a, b) => new Date(a['Exam Date']) - new Date(b['Exam Date']));
+      
+      const dates = examData.map(exam => exam['Exam Date']);
+      const titles = examData.map(exam => exam['Exam Title']);
+      const examNumbers = examData.map(exam => exam['Exam Number']);
+
+      // Numeric indices for color mapping
+      const colorIndices = Array.from({ length: dates.length }, (_, i) => i);
+
+      // Trace definition (gradient on dots, no color bar)
+      const trace = {
+        x: dates,
+        y: titles,
+        customdata: examNumbers,
+        mode: "markers",
+        marker: {
+          color: colorIndices,
+          colorscale: [[0, "#1f77b4"], [1, "#ff00ff"]],
+          cmin: 0,
+          cmax: dates.length - 1,
+          size: 12,
+          showscale: false         // Hides the color bar
+        },
+        hovertemplate:
+          "Passed Date: %{x}<br>" +
+          "Exam Title: %{y}<br>" +
+          "Exam Number: %{customdata}<extra></extra>"
+      };
+
+      // Layout definition
+      const layout = {
+        margin: { t: 20, l: 150, r: 50, b: 50 },
+        xaxis: {
+          title: "Passed Date",
+          type: "date",
+          tickformat: "%Y"
+        },
+        yaxis: {
+          title: "Exam Title",
+          automargin: true
+        }
+      };
+
+      // Render the plot
+      Plotly.newPlot("exam-timeline", [trace], layout, { responsive: true });
+    }
+
+    // Load and process CSV data
+    async function loadExamData() {
+      try {
+        const response = await fetch('passed_exams.csv');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const csvText = await response.text();
+        const examData = parseCSV(csvText);
+        createPlot(examData);
+      } catch (error) {
+        console.error('Error loading exam data:', error);
+        
+        // Display error message to user
+        const errorDiv = document.getElementById('exam-timeline');
+        errorDiv.innerHTML = `
+          <div style="padding: 20px; text-align: center; color: #d32f2f;">
+            <h3>Error Loading Data</h3>
+            <p>Could not load exam data from passed_exams.csv</p>
+            <p>Error: ${error.message}</p>
+            <p>Please ensure the CSV file is in the same directory as this HTML file.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', loadExamData);
   </script>
 </body>
 </html>

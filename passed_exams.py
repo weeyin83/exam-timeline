@@ -5,6 +5,9 @@ Script to fetch a public Microsoft Learn transcript and extract passed exam info
 Usage:
     python passed_exams.py <share_id> [--locale <locale>] [--output <output.csv>]
 
+Example:
+    python passed_exams.py d8yjji6kmml5jg0 --locale en-gb --output passed_exams.csv
+
 If no output filename is provided, the script writes to passed_exams_<share_id>.csv.
 
 The share_id is the identifier at the end of the public transcript URL, e.g., for
@@ -21,6 +24,8 @@ unauthenticated for public transcripts, but may block calls if you are not
 sending an appropriate User‑Agent header. If you encounter a 403 response,
 try adding a User‑Agent or run the script from a network with access to
 learn.microsoft.com.
+
+To test locally, you can start a local web server `python -m http.server 8000` and then open using `http://localhost:8000`.
 """
 import argparse
 import csv
