@@ -11,6 +11,9 @@ jobs:
   update-transcript:
     runs-on: ubuntu-latest
     environment: transcript  # Use the transcript environment for secrets
+    permissions:
+      contents: write  # Allow pushing changes to the repository
+      actions: read    # Standard permission for workflows
 
     steps:
       - name: Checkout repository
