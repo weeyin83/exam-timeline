@@ -1,7 +1,7 @@
 # Microsoft Exam Timeline
-<a href="https://exams.guygregory.com" target="_blank" rel="noopener noreferrer"><img width="1802" height="723" alt="image" src="https://github.com/user-attachments/assets/4f00d296-6e40-45fe-a6b1-1b4354264d7f"/></a>
+<a href="https://exam.guygregory.com" target="_blank" rel="noopener noreferrer"><img width="1802" height="723" alt="image" src="https://github.com/user-attachments/assets/4f00d296-6e40-45fe-a6b1-1b4354264d7f"/></a>
 
-A [web application](https://exams.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
+A [web application](https://exam.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
 
 ## High-Level Overview
 
