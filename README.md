@@ -76,16 +76,16 @@ This workflow automatically keeps the exam data current:
 1. Checks out the repository
 2. Sets up Python 3.12 environment
 3. Installs required dependencies (`requests` library)
-4. Runs the Python script using the `TRANSCRIPT_CODE` environment secret:
+4. Runs the Python script using the `TRANSCRIPT_CODE` repository secret:
    ```bash
    python passed_exams.py "${{ secrets.TRANSCRIPT_CODE }}" \
      --locale en-gb --output passed_exams.csv
    ```
 5. Commits and pushes any changes to `passed_exams.csv`
 
-**Environment Secret Required:**
+**Repository Secret Required:**
 - `TRANSCRIPT_CODE`: The Microsoft Learn transcript share ID
-- This secret is stored in the `transcript` environment for security
+- This secret is stored as a repository secret for easy access across workflows
 
 **Permissions:**
 - `contents: write` - Allows pushing changes back to the repository
@@ -127,10 +127,9 @@ The workflow also handles pull request cleanup by closing the associated preview
    - Brings across index.html, passed-exams.py, and GitHub Actions definitions
    - Also includes passed-exams.csv, but this will be overwritten on by the GitHub Action
 
-**Set up Environment Secrets:**
-   - Navigate to your new GitHub repository → Settings → Environments
-   - Create a `transcript` environment
-   - Add secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
+**Set up Repository Secrets:**
+   - Navigate to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add repository secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
 
 **Azure Static Web Apps Setup:**
    - Create an Azure Static Web App resource (Free tier should be fine)
