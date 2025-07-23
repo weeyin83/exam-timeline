@@ -91,7 +91,7 @@ This workflow automatically keeps the exam data current:
 - `contents: write` - Allows pushing changes back to the repository
 - `actions: read` - Standard workflow permission
 
-### Azure Static Web Apps Deployment (`azure-static-web-apps-zealous-meadow-050e92e10.yml`)
+### Azure Static Web Apps Deployment
 
 This workflow automatically deploys the website:
 
@@ -102,12 +102,9 @@ This workflow automatically deploys the website:
 **Deployment Process:**
 1. Checks out the repository with submodules
 2. Uses Azure Static Web Apps Deploy action
-3. Authenticates using `AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_MEADOW_050E92E10` secret
+3. Authenticates using the repository secret, automatically configured by the Azure Static Web App
 4. Deploys from root directory (`app_location: "/"`) 
 5. No build process required since it's a static site (`output_location: "."`)
-
-**Secret Required:**
-- `AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_MEADOW_050E92E10`: Azure deployment token
 
 The workflow also handles pull request cleanup by closing the associated preview environment when PRs are closed.
 
@@ -125,7 +122,6 @@ The workflow also handles pull request cleanup by closing the associated preview
    - Navigate to your GitHub repository → Settings → Environments
    - Create a `transcript` environment
    - Add secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
-   - Add secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_MEADOW_050E92E10` with your Azure deployment token
 
 2. **Find Your Transcript Share ID:**
    - Go to your Microsoft Learn profile
@@ -133,9 +129,10 @@ The workflow also handles pull request cleanup by closing the associated preview
    - Copy the share ID from the URL (the part after `/transcript/`)
 
 3. **Azure Static Web Apps Setup:**
-   - Create an Azure Static Web Apps resource
+   - Create an Azure Static Web Apps resource (Free tier should be fine)
    - Connect it to your GitHub repository
-   - Copy the deployment token to your GitHub secrets
+   - Deployment token should be automatically added to your repo secrets
+   - (Optional) Add a custom domain
 
 ### Local Development
 
