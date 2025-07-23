@@ -118,21 +118,28 @@ The workflow also handles pull request cleanup by closing the associated preview
 
 ### Configuration
 
-1. **Set up Environment Secrets:**
-   - Navigate to your GitHub repository → Settings → Environments
-   - Create a `transcript` environment
-   - Add secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
-
-2. **Find Your Transcript Share ID:**
+**Find Your Transcript Share ID:**
    - Go to your Microsoft Learn profile
    - Navigate to your public transcript
    - Copy the share ID from the URL (the part after `/transcript/`)
 
-3. **Azure Static Web Apps Setup:**
-   - Create an Azure Static Web Apps resource (Free tier should be fine)
-   - Connect it to your GitHub repository
+**Fork this repo into your own GitHub acccount**
+   - Brings across index.html, passed-exams.py, and GitHub Actions definitions
+   - Also includes passed-exams.csv, but this will be overwritten on by the GitHub Action
+
+**Set up Environment Secrets:**
+   - Navigate to your new GitHub repository → Settings → Environments
+   - Create a `transcript` environment
+   - Add secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
+
+**Azure Static Web Apps Setup:**
+   - Create an Azure Static Web App resource (Free tier should be fine)
+   - Connect it to your GitHub repository (see below for details, login required)
    - Deployment token should be automatically added to your repo secrets
    - (Optional) Add a custom domain
+
+<img width="746" height="1002" alt="image" src="https://github.com/user-attachments/assets/5686491a-a54c-468b-abf4-4332a8437748" />
+
 
 ### Local Development
 
