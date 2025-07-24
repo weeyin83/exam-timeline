@@ -1,7 +1,7 @@
 # Microsoft Exam Timeline
-<a href="https://exams.guygregory.com" target="_blank" rel="noopener noreferrer"><img width="1802" height="723" alt="image" src="https://github.com/user-attachments/assets/4f00d296-6e40-45fe-a6b1-1b4354264d7f"/></a>
+<a href="https://exam.guygregory.com" target="_blank" rel="noopener noreferrer"><img width="1802" height="723" alt="image" src="https://github.com/user-attachments/assets/4f00d296-6e40-45fe-a6b1-1b4354264d7f"/></a>
 
-A [web application](https://exams.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
+A [web application](https://exam.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
 
 ## High-Level Overview
 
@@ -76,22 +76,22 @@ This workflow automatically keeps the exam data current:
 1. Checks out the repository
 2. Sets up Python 3.12 environment
 3. Installs required dependencies (`requests` library)
-4. Runs the Python script using the `TRANSCRIPT_CODE` environment secret:
+4. Runs the Python script using the `TRANSCRIPT_CODE` repository secret:
    ```bash
    python passed_exams.py "${{ secrets.TRANSCRIPT_CODE }}" \
      --locale en-gb --output passed_exams.csv
    ```
 5. Commits and pushes any changes to `passed_exams.csv`
 
-**Environment Secret Required:**
+**Repository Secret Required:**
 - `TRANSCRIPT_CODE`: The Microsoft Learn transcript share ID
-- This secret is stored in the `transcript` environment for security
+- This secret is stored as a repository secret for easy access across workflows
 
 **Permissions:**
 - `contents: write` - Allows pushing changes back to the repository
 - `actions: read` - Standard workflow permission
 
-### Azure Static Web Apps Deployment (`azure-static-web-apps-zealous-meadow-050e92e10.yml`)
+### Azure Static Web Apps Deployment
 
 This workflow automatically deploys the website:
 
@@ -102,12 +102,9 @@ This workflow automatically deploys the website:
 **Deployment Process:**
 1. Checks out the repository with submodules
 2. Uses Azure Static Web Apps Deploy action
-3. Authenticates using `AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_MEADOW_050E92E10` secret
+3. Authenticates using the repository secret, automatically configured by the Azure Static Web App
 4. Deploys from root directory (`app_location: "/"`) 
 5. No build process required since it's a static site (`output_location: "."`)
-
-**Secret Required:**
-- `AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_MEADOW_050E92E10`: Azure deployment token
 
 The workflow also handles pull request cleanup by closing the associated preview environment when PRs are closed.
 
@@ -121,21 +118,27 @@ The workflow also handles pull request cleanup by closing the associated preview
 
 ### Configuration
 
-1. **Set up Environment Secrets:**
-   - Navigate to your GitHub repository → Settings → Environments
-   - Create a `transcript` environment
-   - Add secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
-   - Add secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_MEADOW_050E92E10` with your Azure deployment token
-
-2. **Find Your Transcript Share ID:**
+**Find Your Transcript Share ID:**
    - Go to your Microsoft Learn profile
    - Navigate to your public transcript
    - Copy the share ID from the URL (the part after `/transcript/`)
 
-3. **Azure Static Web Apps Setup:**
-   - Create an Azure Static Web Apps resource
-   - Connect it to your GitHub repository
-   - Copy the deployment token to your GitHub secrets
+**Fork this repo into your own GitHub acccount**
+   - Brings across index.html, passed-exams.py, and GitHub Actions definitions
+   - Also includes passed-exams.csv, but this will be overwritten on by the GitHub Action
+
+**Set up Repository Secrets:**
+   - Navigate to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add repository secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
+
+**Azure Static Web Apps Setup:**
+   - Create an Azure Static Web App resource (Free tier should be fine)
+   - Connect it to your GitHub repository (see below for details, login required)
+   - Deployment token should be automatically added to your repo secrets
+   - (Optional) Add a custom domain
+
+<img width="746" height="1002" alt="image" src="https://github.com/user-attachments/assets/5686491a-a54c-468b-abf4-4332a8437748" />
+
 
 ### Local Development
 
