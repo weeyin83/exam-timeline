@@ -269,8 +269,14 @@
     // Function to update statistics
     function updateStats(data) {
       const totalExams = data.length;
-      const years = [...new Set(data.map(exam => new Date(exam['Exam Date']).getFullYear()))];
-      const yearSpan = Math.max(...years) - Math.min(...years) + 1;
+      const dates = data.map(exam => new Date(exam['Exam Date']));
+      const firstExamDate = new Date(Math.min(...dates));
+      const lastExamDate = new Date(Math.max(...dates));
+      const today = new Date();
+      
+      // Calculate years from first exam to today
+      const yearSpan = today.getFullYear() - firstExamDate.getFullYear();
+      
       const latestExam = data.sort((a, b) => new Date(b['Exam Date']) - new Date(a['Exam Date']))[0];
       
       document.getElementById('total-exams').textContent = totalExams;
