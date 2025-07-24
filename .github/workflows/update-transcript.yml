@@ -31,9 +31,11 @@ jobs:
           pip install requests
 
       - name: Update transcript data
+        env:
+          LOCALE: ${{ vars.LOCALE }}
         run: |
           python passed_exams.py "${{ secrets.TRANSCRIPT_CODE }}" \
-            --locale en-gb --output passed_exams.csv
+            --output passed_exams.csv
 
       - name: Commit and push changes
         id: commit_changes
