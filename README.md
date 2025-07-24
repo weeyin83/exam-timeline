@@ -1,4 +1,5 @@
-<a href="https://exams.guygregory.com" target="_blank" rel="noopener noreferrer"><img width="2216" height="1503" alt="image" src="https://github.com/user-attachments/assets/2d7e5e8d-ecb5-4c09-8723-d50728c127dc" /></a>
+<a href="https://exams.guygregory.com" target="_blank" rel="noopener noreferrer"><img width="2217" height="1503" alt="image" src="https://github.com/user-attachments/assets/708b3d1c-3e3d-48c3-aefb-74d983a85d00" /></a>
+
 
 A [web application](https://exams.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
 
