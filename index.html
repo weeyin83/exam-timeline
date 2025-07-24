@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Microsoft Exam Timeline</title>
+  <title>Microsoft Exam Timeline Dashboard</title>
   <script type="text/javascript">
     window.PlotlyConfig = { MathJaxConfig: 'local' };
   </script>
@@ -11,11 +11,223 @@
     integrity="sha256-oy6Be7Eh6eiQFs5M7oXuPxxm9qbJXEtTpfSI93dW16Q="
     crossorigin="anonymous"
   ></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .dashboard-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      color: #2c3e50;
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header p {
+      color: #7f8c8d;
+      font-size: 1.2em;
+      font-weight: 300;
+    }
+    
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 10px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+      flex: 1;
+      min-width: 200px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(52, 152, 219, 0.4);
+    }
+    
+    .stat-number {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .control-group label {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    .control-group select, .control-group input {
+      padding: 8px 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    
+    .control-group select:focus, .control-group input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+    
+    .chart-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    #exam-timeline {
+      width: 100%;
+      height: 600px;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 400px;
+      font-size: 1.2em;
+      color: #7f8c8d;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-right: 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 20px;
+        margin: 10px;
+      }
+      
+      .header h1 {
+        font-size: 2em;
+      }
+      
+      .stats-container {
+        flex-direction: column;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      #exam-timeline {
+        height: 500px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="exam-timeline" style="width:100%;height:800px;"></div>
+  <div class="dashboard-container">
+    <div class="header">
+      <h1>🎓 Microsoft Exam Timeline</h1>
+    </div>
+    
+    <div class="chart-container">
+      <div id="exam-timeline"></div>
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="view-mode">View:</label>
+        <select id="view-mode">
+          <option value="timeline">Timeline View</option>
+          <option value="yearly">Yearly Summary</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="search-exam">Search:</label>
+        <input type="text" id="search-exam" placeholder="Search exams...">
+      </div>
+    </div>
+    
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-number" id="total-exams">0</div>
+        <div class="stat-label">Total Exams Passed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="exam-years">0</div>
+        <div class="stat-label">Years of Certification</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="recent-exam">-</div>
+        <div class="stat-label">Latest Achievement</div>
+      </div>
+    </div>
+  </div>
   <script type="text/javascript">
     window.PLOTLYENV = window.PLOTLYENV || {};
+
+    let allExamData = [];
+    let filteredData = [];
 
     // Function to parse CSV data
     function parseCSV(csvText) {
@@ -54,8 +266,50 @@
       return data;
     }
 
-    // Function to create the plot with data
-    function createPlot(examData) {
+    // Function to update statistics
+    function updateStats(data) {
+      const totalExams = data.length;
+      const years = [...new Set(data.map(exam => new Date(exam['Exam Date']).getFullYear()))];
+      const yearSpan = Math.max(...years) - Math.min(...years) + 1;
+      const latestExam = data.sort((a, b) => new Date(b['Exam Date']) - new Date(a['Exam Date']))[0];
+      
+      document.getElementById('total-exams').textContent = totalExams;
+      document.getElementById('exam-years').textContent = yearSpan;
+      document.getElementById('recent-exam').textContent = latestExam ? latestExam['Exam Number'] : '-';
+    }
+
+    // Function to populate year filter
+    function populateYearFilter(data) {
+      // Year filter removed - no longer needed
+    }
+
+    // Function to filter data
+    function filterData() {
+      const searchTerm = document.getElementById('search-exam').value.toLowerCase();
+      
+      filteredData = allExamData.filter(exam => {
+        const matchesSearch = searchTerm === '' || 
+          exam['Exam Title'].toLowerCase().includes(searchTerm) ||
+          exam['Exam Number'].toLowerCase().includes(searchTerm);
+        
+        return matchesSearch;
+      });
+      
+      const viewMode = document.getElementById('view-mode').value;
+      if (viewMode === 'timeline') {
+        createTimelinePlot(filteredData);
+      } else {
+        createYearlyPlot(filteredData);
+      }
+    }
+
+    // Function to create the timeline plot
+    function createTimelinePlot(examData) {
+      if (examData.length === 0) {
+        document.getElementById('exam-timeline').innerHTML = '<div style="text-align: center; padding: 50px; color: #7f8c8d;">No exams found matching your criteria.</div>';
+        return;
+      }
+
       // Sort by date to ensure proper chronological order
       examData.sort((a, b) => new Date(a['Exam Date']) - new Date(b['Exam Date']));
       
@@ -63,45 +317,133 @@
       const titles = examData.map(exam => exam['Exam Title']);
       const examNumbers = examData.map(exam => exam['Exam Number']);
 
-      // Numeric indices for color mapping
+      // Numeric indices for color mapping (original gradient)
       const colorIndices = Array.from({ length: dates.length }, (_, i) => i);
 
-      // Trace definition (gradient on dots, no color bar)
+      // Trace definition with original gradient styling
       const trace = {
         x: dates,
         y: titles,
         customdata: examNumbers,
-        mode: "markers",
+        mode: "markers+lines",
+        line: {
+          color: 'rgba(116, 165, 245, 0.3)',
+          width: 3,
+          dash: 'dot'
+        },
         marker: {
           color: colorIndices,
           colorscale: [[0, "#1f77b4"], [1, "#ff00ff"]],
           cmin: 0,
           cmax: dates.length - 1,
-          size: 12,
-          showscale: false         // Hides the color bar
+          size: 14,
+          line: {
+            color: 'white',
+            width: 2
+          },
+          opacity: 0.8,
+          showscale: false
         },
         hovertemplate:
-          "Passed Date: %{x}<br>" +
-          "Exam Title: %{y}<br>" +
-          "Exam Number: %{customdata}<extra></extra>"
+          "<b>%{customdata}</b><br>" +
+          "%{y}<br>" +
+          "Passed: %{x|%Y-%m-%d}<br>" +
+          "<extra></extra>"
       };
 
-      // Layout definition
+      // Enhanced layout
       const layout = {
-        margin: { t: 20, l: 150, r: 50, b: 50 },
+        margin: { t: 20, l: 150, r: 50, b: 80 },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: 'rgba(0,0,0,0)',
         xaxis: {
-          title: "Passed Date",
+          title: {
+            text: "Date Passed",
+            font: { size: 14, color: '#2c3e50' }
+          },
           type: "date",
-          tickformat: "%Y"
+          tickformat: "%Y",
+          gridcolor: 'rgba(0,0,0,0.1)',
+          showgrid: true
         },
         yaxis: {
-          title: "Exam Title",
-          automargin: true
+          automargin: true,
+          gridcolor: 'rgba(0,0,0,0.1)',
+          showgrid: true
+        },
+        hovermode: 'closest',
+        showlegend: false
+      };
+
+      // Render the plot with config
+      const config = { 
+        responsive: true,
+        displayModeBar: 'hover',
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        displaylogo: false
+      };
+      
+      Plotly.newPlot("exam-timeline", [trace], layout, config);
+    }
+
+    // Function to create yearly summary plot
+    function createYearlyPlot(examData) {
+      if (examData.length === 0) {
+        document.getElementById('exam-timeline').innerHTML = '<div style="text-align: center; padding: 50px; color: #7f8c8d;">No exams found matching your criteria.</div>';
+        return;
+      }
+
+      // Group by year
+      const yearlyData = {};
+      examData.forEach(exam => {
+        const year = new Date(exam['Exam Date']).getFullYear();
+        if (!yearlyData[year]) {
+          yearlyData[year] = 0;
+        }
+        yearlyData[year]++;
+      });
+
+      const years = Object.keys(yearlyData).sort();
+      const counts = years.map(year => yearlyData[year]);
+
+      const trace = {
+        x: years,
+        y: counts,
+        type: 'bar',
+        marker: {
+          color: 'rgba(52, 152, 219, 0.8)',
+          line: {
+            color: 'rgba(52, 152, 219, 1)',
+            width: 2
+          }
+        },
+        hovertemplate: "Year: %{x}<br>Exams Passed: %{y}<extra></extra>"
+      };
+
+      const layout = {
+        margin: { t: 20, l: 80, r: 50, b: 80 },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        xaxis: {
+          title: "Year",
+          font: { size: 14, color: '#2c3e50' },
+          gridcolor: 'rgba(0,0,0,0.1)'
+        },
+        yaxis: {
+          title: "Number of Exams Passed",
+          font: { size: 14, color: '#2c3e50' },
+          gridcolor: 'rgba(0,0,0,0.1)'
         }
       };
 
-      // Render the plot
-      Plotly.newPlot("exam-timeline", [trace], layout, { responsive: true });
+      const config = { 
+        responsive: true,
+        displayModeBar: 'hover',
+        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+        displaylogo: false
+      };
+
+      Plotly.newPlot("exam-timeline", [trace], layout, config);
     }
 
     // Load and process CSV data
@@ -112,26 +454,37 @@
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const csvText = await response.text();
-        const examData = parseCSV(csvText);
-        createPlot(examData);
+        allExamData = parseCSV(csvText);
+        filteredData = [...allExamData];
+        
+        updateStats(allExamData);
+        populateYearFilter(allExamData);
+        createTimelinePlot(filteredData);
+        
       } catch (error) {
         console.error('Error loading exam data:', error);
         
         // Display error message to user
         const errorDiv = document.getElementById('exam-timeline');
         errorDiv.innerHTML = `
-          <div style="padding: 20px; text-align: center; color: #d32f2f;">
-            <h3>Error Loading Data</h3>
-            <p>Could not load exam data from passed_exams.csv</p>
-            <p>Error: ${error.message}</p>
+          <div style="padding: 40px; text-align: center; color: #e74c3c; background: #fdf2f2; border-radius: 10px; border: 1px solid #f5c6cb;">
+            <h3 style="margin-bottom: 15px;">📋 Error Loading Data</h3>
+            <p style="margin-bottom: 10px;">Could not load exam data from passed_exams.csv</p>
+            <p style="margin-bottom: 10px; font-weight: bold;">Error: ${error.message}</p>
             <p>Please ensure the CSV file is in the same directory as this HTML file.</p>
           </div>
         `;
       }
     }
 
-    // Load data when page loads
-    document.addEventListener('DOMContentLoaded', loadExamData);
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      loadExamData();
+      
+      // Add event listeners for controls
+      document.getElementById('view-mode').addEventListener('change', filterData);
+      document.getElementById('search-exam').addEventListener('input', filterData);
+    });
   </script>
 </body>
 </html>
