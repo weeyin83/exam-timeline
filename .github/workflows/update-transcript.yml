@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Allow pushing changes to the repository
-      actions: read    # Standard permission for workflows
+      actions: write   # Allow triggering other workflows
 
     steps:
       - name: Checkout repository
