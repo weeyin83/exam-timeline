@@ -6,7 +6,7 @@ Usage:
     python passed_exams.py <share_id> [--locale <locale>] [--output <output.csv>]
 
 Example:
-    python passed_exams.py d8yjji6kmml5jg0 --locale en-gb --output passed_exams.csv
+    python passed_exams.py d8yjji6kmml5jg0 --locale en-us --output passed_exams.csv
 
 If no output filename is provided, the script writes to passed_exams_<share_id>.csv.
 
@@ -29,6 +29,7 @@ To test locally, you can start a local web server `python -m http.server 8000` a
 """
 import argparse
 import csv
+import os
 import sys
 from typing import List, Dict
 import requests
@@ -36,11 +37,11 @@ import requests
 API_ENDPOINT_TEMPLATE = "https://learn.microsoft.com/api/profiles/transcript/share/{share_id}?locale={locale}"
 
 
-def fetch_transcript(share_id: str, locale: str = "en-gb") -> Dict:
+def fetch_transcript(share_id: str, locale: str = "en-us") -> Dict:
     """Fetch transcript JSON from the Microsoft Learn public API.
 
     :param share_id: The transcript sharing identifier from the URL
-    :param locale: Locale parameter for the API (default: en-gb)
+    :param locale: Locale parameter for the API (default: en-us)
     :return: Parsed JSON response
     :raises requests.HTTPError: if the HTTP request returned an unsuccessful status code
     :raises ValueError: if the response cannot be decoded as JSON
@@ -119,7 +120,10 @@ def write_csv(exams: List[Dict[str, str]], filename: str) -> None:
 def main(argv: List[str] = None) -> int:
     parser = argparse.ArgumentParser(description="Extract passed exams from a Microsoft Learn public transcript.")
     parser.add_argument("share_id", help="Transcript share identifier from the URL")
-    parser.add_argument("--locale", default="en-gb", help="Locale to request the transcript (default: en-gb)")
+    
+    # Get default locale from environment variable or use en-us as fallback
+    default_locale = os.environ.get("LOCALE", "en-us")
+    parser.add_argument("--locale", default=default_locale, help=f"Locale to request the transcript (default: {default_locale})")
     parser.add_argument("--output", help="Output CSV filename")
     args = parser.parse_args(argv)
 
