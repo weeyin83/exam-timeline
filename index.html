@@ -5,11 +5,24 @@
   <title>Microsoft Exam Timeline Dashboard</title>
   <script type="text/javascript">
     window.PlotlyConfig = { MathJaxConfig: 'local' };
+    
+    function loadLocalPlotly() {
+      console.log('Plotly CDN failed, loading local version');
+      const script = document.createElement('script');
+      script.src = 'plotly.min.js';
+      script.onload = () => console.log('Local Plotly loaded successfully');
+      script.onerror = () => {
+        console.log('Local Plotly also failed, using fallback display');
+        window.plotlyLoadFailed = true;
+      };
+      document.head.appendChild(script);
+    }
   </script>
   <script
     src="https://cdn.plot.ly/plotly-3.0.1.min.js"
     integrity="sha256-oy6Be7Eh6eiQFs5M7oXuPxxm9qbJXEtTpfSI93dW16Q="
     crossorigin="anonymous"
+    onerror="loadLocalPlotly()"
   ></script>
   <style>
     * {
@@ -132,7 +145,7 @@
     
     #exam-timeline {
       width: 100%;
-      height: 600px;
+      height: 1200px;
     }
     
     .loading {
@@ -179,7 +192,7 @@
       }
       
       #exam-timeline {
-        height: 500px;
+        height: 1000px;
       }
     }
   </style>
@@ -369,7 +382,7 @@
 
       // Enhanced layout
       const layout = {
-        margin: { t: 20, l: 150, r: 50, b: 80 },
+        margin: { t: 20, l: 300, r: 50, b: 80 },
         plot_bgcolor: 'rgba(0,0,0,0)',
         paper_bgcolor: 'rgba(0,0,0,0)',
         xaxis: {
@@ -385,7 +398,13 @@
         yaxis: {
           automargin: true,
           gridcolor: 'rgba(0,0,0,0.1)',
-          showgrid: true
+          showgrid: true,
+          type: 'category',
+          categoryorder: 'array',
+          categoryarray: titles,
+          tickmode: 'array',
+          tickvals: titles,
+          ticktext: titles
         },
         hovermode: 'closest',
         showlegend: false
@@ -399,7 +418,29 @@
         displaylogo: false
       };
       
-      Plotly.newPlot("exam-timeline", [trace], layout, config);
+      if (typeof Plotly !== 'undefined') {
+        Plotly.newPlot("exam-timeline", [trace], layout, config);
+      } else {
+        // Fallback display when Plotly is not available
+        document.getElementById('exam-timeline').innerHTML = `
+          <div style="padding: 20px; background: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6;">
+            <h3 style="color: #495057; margin-bottom: 15px;">📊 Chart Data Ready (${examData.length} exams)</h3>
+            <p style="color: #6c757d; margin-bottom: 15px;">Chart visualization temporarily unavailable. Here's the data that would be displayed:</p>
+            <div style="max-height: 400px; overflow-y: auto; background: white; padding: 15px; border-radius: 5px; border: 1px solid #e9ecef;">
+              ${examData.map((exam, i) => `
+                <div style="padding: 8px; border-bottom: 1px solid #f1f3f4; display: flex; justify-content: space-between;">
+                  <div style="flex: 1; font-weight: 500;">${exam['Exam Title']}</div>
+                  <div style="margin: 0 15px; color: #6c757d;">${exam['Exam Number']}</div>
+                  <div style="color: #6c757d;">${exam['Exam Date']}</div>
+                </div>
+              `).join('')}
+            </div>
+            <p style="color: #6c757d; margin-top: 15px; font-size: 14px;">
+              All ${examData.length} exams are parsed and ready for visualization.
+            </p>
+          </div>
+        `;
+      }
     }
 
     // Function to create yearly summary plot
@@ -475,7 +516,11 @@
         
         updateStats(allExamData);
         populateYearFilter(allExamData);
-        createTimelinePlot(filteredData);
+        
+        // Wait a bit for Plotly to load if it was loaded asynchronously
+        setTimeout(() => {
+          createTimelinePlot(filteredData);
+        }, 500);
         
       } catch (error) {
         console.error('Error loading exam data:', error);
