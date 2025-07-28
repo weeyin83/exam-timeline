@@ -43,7 +43,6 @@ Thumbs.db
 
 # Node.js
 node_modules/
-package-lock.json
 
 # Temporary files
 *.tmp
