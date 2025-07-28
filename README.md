@@ -101,10 +101,10 @@ This workflow automatically deploys the website:
 
 **Deployment Process:**
 1. Checks out the repository with submodules
-2. Uses Azure Static Web Apps Deploy action
-3. Authenticates using the repository secret, automatically configured by the Azure Static Web App
-4. Deploys from root directory (`app_location: "/"`) 
-5. No build process required since it's a static site (`output_location: "."`)
+2. Sets up Node.js and installs npm dependencies (plotly.js-dist-min)
+3. Uses Azure Static Web Apps Deploy action
+4. Authenticates using the repository secret, automatically configured by the Azure Static Web App
+5. Deploys from root directory (`app_location: "/"`) with build artifacts (`output_location: "."`)
 
 The workflow also handles pull request cleanup by closing the associated preview environment when PRs are closed.
 
@@ -113,6 +113,7 @@ The workflow also handles pull request cleanup by closing the associated preview
 ### Prerequisites
 
 - Python 3.12+ with `requests` library
+- Node.js 18+ with npm (for local development)
 - Azure Static Web Apps resource
 - GitHub repository with Actions enabled
 
@@ -144,22 +145,27 @@ The workflow also handles pull request cleanup by closing the associated preview
 
 To test locally:
 
-1. **Install dependencies:**
+1. **Install Python dependencies:**
    ```bash
    pip install requests
    ```
 
-2. **Run the Python script:**
+2. **Install Node.js dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Run the Python script:**
    ```bash
    python passed_exams.py YOUR_SHARE_ID --output passed_exams.csv
    ```
 
-3. **Serve the website locally:**
+4. **Serve the website locally:**
    ```bash
    python -m http.server 8000
    ```
    
-4. **Open in browser:**
+5. **Open in browser:**
    ```
    http://localhost:8000
    ```
@@ -172,8 +178,10 @@ exam-timeline/
 │   ├── update-transcript.yml          # Daily data update automation
 │   └── azure-static-web-apps-*.yml    # Azure deployment automation
 ├── index.html                         # Web interface with timeline visualization
+├── package.json                       # Node.js dependencies (plotly.js)
 ├── passed_exams.csv                   # Exam data (auto-updated)
 ├── passed_exams.py                    # Python script for data fetching
+├── plotly.min.js                      # Plotly.js library (fallback)
 ├── .gitignore                         # Git ignore patterns
 └── README.md                          # This file
 ```
