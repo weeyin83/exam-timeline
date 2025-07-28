@@ -229,35 +229,45 @@
     let allExamData = [];
     let filteredData = [];
 
-    // Function to parse CSV data
+    // Function to parse CSV data with robust quoted field handling
     function parseCSV(csvText) {
       const lines = csvText.trim().split('\n');
-      const headers = lines[0].split(',');
+      // Clean headers and remove any carriage returns
+      const headers = lines[0].split(',').map(h => h.trim().replace(/\r/g, ''));
       const data = [];
       
       for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].replace(/\r/g, ''); // Remove carriage returns
+        
+        // Use a proper CSV parsing approach
         const values = [];
         let current = '';
         let inQuotes = false;
         
-        for (let j = 0; j < lines[i].length; j++) {
-          const char = lines[i][j];
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
           
           if (char === '"') {
             inQuotes = !inQuotes;
+            // Don't add the quote character to the value
           } else if (char === ',' && !inQuotes) {
+            // Found a field separator
             values.push(current.trim());
             current = '';
           } else {
+            // Regular character, add to current field
             current += char;
           }
         }
+        
+        // Add the last field
         values.push(current.trim());
         
-        if (values.length === headers.length) {
+        // Only add rows that have the correct number of columns and aren't empty
+        if (values.length === headers.length && values.some(v => v.length > 0)) {
           const row = {};
           headers.forEach((header, index) => {
-            row[header.trim().replace(/"/g, '')] = values[index].replace(/"/g, '');
+            row[header] = values[index];
           });
           data.push(row);
         }
