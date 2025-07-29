@@ -13,6 +13,7 @@ jobs:
     permissions:
       contents: write  # Allow pushing changes to the repository
       actions: write   # Allow triggering other workflows
+      models: read # Allow access to GitHub Models
 
     steps:
       - name: Checkout repository
