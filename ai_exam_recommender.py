@@ -61,4 +61,23 @@ response = client.chat.completions.create(
     }
 )
 
-print(response.choices[0].message.content)
+# Get the response content and parse it
+response_content = response.choices[0].message.content
+print(response_content)
+
+# Parse the JSON response and update the partial file
+try:
+    recommendation_data = json.loads(response_content)
+    exam_code = recommendation_data.get("exam_code", "-")
+    
+    # Update the partial file with the exam code
+    with open("partials/ai-recommendation.html", "w", encoding="utf-8") as f:
+        f.write(f'<span id="ai-recommendation">{exam_code}</span>')
+    
+    print(f"Updated partials/ai-recommendation.html with exam code: {exam_code}")
+    
+except (json.JSONDecodeError, KeyError) as e:
+    print(f"Error parsing recommendation response: {e}")
+    # Keep the default "-" in case of error
+    with open("partials/ai-recommendation.html", "w", encoding="utf-8") as f:
+        f.write('<span id="ai-recommendation">-</span>')

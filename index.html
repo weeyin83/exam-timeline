@@ -247,6 +247,10 @@
         <div class="stat-number" id="recent-exam">-</div>
         <div class="stat-label">Latest Achievement</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-number" id="ai-recommendation">-</div>
+        <div class="stat-label">AI Recommendation</div>
+      </div>
     </div>
   </div>
   <script type="text/javascript">
@@ -578,10 +582,34 @@
       }
     }
 
+    // Function to load AI recommendation from partial file
+    async function loadAIRecommendation() {
+      try {
+        const response = await fetch('partials/ai-recommendation.html');
+        if (response.ok) {
+          const recommendationHtml = await response.text();
+          const recommendationElement = document.getElementById('ai-recommendation');
+          if (recommendationElement) {
+            // Extract the content from the fetched HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = recommendationHtml;
+            const spanContent = tempDiv.querySelector('span');
+            if (spanContent) {
+              recommendationElement.textContent = spanContent.textContent;
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Could not load AI recommendation:', error);
+        // Keep the default "-" text
+      }
+    }
+
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
       loadExamData();
       loadTimestamp();
+      loadAIRecommendation();
       
       // Add event listeners for controls
       document.getElementById('view-mode').addEventListener('change', filterData);

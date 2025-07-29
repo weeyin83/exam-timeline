@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests openai
 
       - name: Update transcript data
         id: update_transcript
@@ -45,18 +45,32 @@ jobs:
             exit 1
           fi
 
+      - name: Generate AI exam recommendation
+        id: ai_recommendation
+        if: steps.update_transcript.outputs.transcript_check_successful == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if python ai_exam_recommender.py; then
+            echo "ai_recommendation_successful=true" >> $GITHUB_OUTPUT
+            echo "AI recommendation generated successfully"
+          else
+            echo "ai_recommendation_successful=false" >> $GITHUB_OUTPUT
+            echo "AI recommendation failed, continuing with default"
+          fi
+
       - name: Commit and push changes
         id: commit_changes
         if: steps.update_transcript.outputs.transcript_check_successful == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add passed_exams.csv
+          git add passed_exams.csv partials/ai-recommendation.html
           if git diff --cached --quiet; then
             echo "No changes to commit"
             echo "changes_made=false" >> $GITHUB_OUTPUT
           else
-            git commit -m "Update passed_exams.csv with latest transcript data"
+            git commit -m "Update passed_exams.csv and AI recommendation with latest data"
             git push
             echo "changes_made=true" >> $GITHUB_OUTPUT
           fi
