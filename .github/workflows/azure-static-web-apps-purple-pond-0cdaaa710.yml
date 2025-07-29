@@ -27,6 +27,33 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Generate last updated timestamp
+        run: |
+          # Get the workflow ID for update-transcript.yml
+          workflow_id=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows" | \
+            jq -r '.workflows[] | select(.path == ".github/workflows/update-transcript.yml") | .id')
+          
+          # Get the latest successful run of the update-transcript workflow
+          latest_run=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/${workflow_id}/runs?status=success&per_page=1" | \
+            jq -r '.workflow_runs[0].updated_at')
+          
+          # Check if we got a valid timestamp
+          if [ "$latest_run" != "null" ] && [ -n "$latest_run" ]; then
+            # Format the timestamp with UTC suffix
+            formatted_date=$(date -d "$latest_run" +"%d %B %Y %H:%M" 2>/dev/null || echo "Recently")
+            if [ "$formatted_date" != "Recently" ]; then
+              echo "<span id=\"last-updated\">Last updated: $formatted_date UTC</span>" > partials/last-updated.html
+            else
+              echo "<span id=\"last-updated\">Last updated: Recently</span>" > partials/last-updated.html
+            fi
+          else
+            echo "<span id=\"last-updated\">Last updated: Recently</span>" > partials/last-updated.html
+          fi
+          
+          echo "Generated timestamp file:"
+          cat partials/last-updated.html
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1

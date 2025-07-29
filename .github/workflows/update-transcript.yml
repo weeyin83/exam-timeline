@@ -31,14 +31,23 @@ jobs:
           pip install requests
 
       - name: Update transcript data
+        id: update_transcript
         env:
           LOCALE: ${{ vars.LOCALE }}
         run: |
-          python passed_exams.py "${{ secrets.TRANSCRIPT_CODE }}" \
-            --output passed_exams.csv
+          if python passed_exams.py "${{ secrets.TRANSCRIPT_CODE }}" \
+            --output passed_exams.csv; then
+            echo "transcript_check_successful=true" >> $GITHUB_OUTPUT
+            echo "Transcript check completed successfully"
+          else
+            echo "transcript_check_successful=false" >> $GITHUB_OUTPUT
+            echo "Transcript check failed"
+            exit 1
+          fi
 
       - name: Commit and push changes
         id: commit_changes
+        if: steps.update_transcript.outputs.transcript_check_successful == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -53,7 +62,7 @@ jobs:
           fi
 
       - name: Trigger Azure Static Web Apps deployment
-        if: steps.commit_changes.outputs.changes_made == 'true'
+        if: steps.update_transcript.outputs.transcript_check_successful == 'true'
         uses: actions/github-script@v7
         with:
           script: |
