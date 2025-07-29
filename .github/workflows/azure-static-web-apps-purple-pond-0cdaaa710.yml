@@ -41,9 +41,13 @@ jobs:
           
           # Check if we got a valid timestamp
           if [ "$latest_run" != "null" ] && [ -n "$latest_run" ]; then
-            # Format the timestamp 
+            # Format the timestamp with UTC suffix
             formatted_date=$(date -d "$latest_run" +"%d %B %Y %H:%M" 2>/dev/null || echo "Recently")
-            echo "<span id=\"last-updated\">Last updated: $formatted_date</span>" > partials/last-updated.html
+            if [ "$formatted_date" != "Recently" ]; then
+              echo "<span id=\"last-updated\">Last updated: $formatted_date UTC</span>" > partials/last-updated.html
+            else
+              echo "<span id=\"last-updated\">Last updated: Recently</span>" > partials/last-updated.html
+            fi
           else
             echo "<span id=\"last-updated\">Last updated: Recently</span>" > partials/last-updated.html
           fi
