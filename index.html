@@ -135,6 +135,16 @@
       border-color: #3498db;
     }
     
+    .timestamp-group {
+      font-style: italic;
+      color: #7f8c8d;
+      font-size: 0.9em;
+    }
+    
+    .timestamp-group span {
+      white-space: nowrap;
+    }
+    
     .chart-container {
       background: white;
       border-radius: 15px;
@@ -218,6 +228,9 @@
       <div class="control-group">
         <label for="search-exam">Search:</label>
         <input type="text" id="search-exam" placeholder="Search exams...">
+      </div>
+      <div class="control-group timestamp-group">
+        <span id="last-updated">Last updated: Loading...</span>
       </div>
     </div>
     
@@ -542,9 +555,33 @@
       }
     }
 
+    // Function to load timestamp from partial file
+    async function loadTimestamp() {
+      try {
+        const response = await fetch('partials/last-updated.html');
+        if (response.ok) {
+          const timestampHtml = await response.text();
+          const timestampElement = document.getElementById('last-updated');
+          if (timestampElement) {
+            // Extract the content from the fetched HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = timestampHtml;
+            const spanContent = tempDiv.querySelector('span');
+            if (spanContent) {
+              timestampElement.textContent = spanContent.textContent;
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Could not load timestamp:', error);
+        // Keep the default "Loading..." text
+      }
+    }
+
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
       loadExamData();
+      loadTimestamp();
       
       // Add event listeners for controls
       document.getElementById('view-mode').addEventListener('change', filterData);
