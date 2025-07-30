@@ -1,5 +1,8 @@
 <a href="https://exams.guygregory.com"><img width="2217" height="1503" alt="image" src="https://github.com/user-attachments/assets/3aef88b7-aa2e-4d25-9d3b-b0d76bdd7766" /></a>
 
+
+
+
 A [web application](https://exams.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
 
 ## High-Level Overview
@@ -16,6 +19,8 @@ The result is a live, always up-to-date timeline showing certification exam achi
 ## How It Works
 
 ### Python Script (`passed_exams.py`)
+
+> Disclaimer: The use of the Microsoft Learn API in this way is **not officially supported or documented**, and while suitable for a simple hobby project, is **not appropriate for a production application**. Future API availability is not guaranteed. For commercial integrations, please contact your Microsoft representative.
 
 The core functionality is powered by a Python script that:
 
