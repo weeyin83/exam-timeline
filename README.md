@@ -14,10 +14,11 @@ This repository creates an automated system that:
 
 1. **Fetches exam and badge data daily** from Microsoft Learn public transcripts and Credly public profiles using Python scripts
 2. **Stores the data** in CSV files that get automatically updated 
-3. **Visualizes the timeline** through an interactive web interface using Plotly.js with intelligent data source selection
-4. **Deploys automatically** to Azure Static Web Apps whenever changes are made
+3. **Generates AI-powered exam recommendations** using OpenAI's gpt-4o model to suggest the next logical certification based on the learner's progress
+4. **Visualizes the timeline** through an interactive web interface using Plotly.js with intelligent data source selection
+5. **Deploys automatically** to Azure Static Web Apps whenever changes are made
 
-The result is a live, always up-to-date timeline showing certification achievements from multiple sources (Microsoft exams, Credly badges, or both) with minimal manual intervention. The dashboard intelligently displays only the data sources where information is available.
+The result is a live, always up-to-date timeline showing certification achievements from multiple sources (Microsoft exams, Credly badges, or both) with AI-powered recommendations for next steps, all with minimal manual intervention. The dashboard intelligently displays only the data sources where information is available.
 
 ## How It Works
 
@@ -89,6 +90,19 @@ The `username` can be found by logging into Credly and taking the last part of y
 https://www.credly.com/users/guygregory → username is "guygregory"
 ```
 
+### AI Exam Recommender (`ai_exam_recommender.py`)
+
+The AI recommendation system suggests the next logical Microsoft exam based on the learner's transcript:
+
+- **Analyzes transcript data** from the `passed_exams.csv` file to understand the learner's certification journey
+- **Uses OpenAI's gpt-4o model** hosted by GitHub Models (on Azure AI) for intelligent recommendations
+- **Leverages structured outputs** with enum type constraints to ensure recommendations come only from the [prioritized exam list](priority_ARB_exams.csv)
+- **Avoids duplicate recommendations** by ensuring the suggested exam is not already completed
+- **Outputs JSON format** with the recommendation: `{"exam_code":"AZ-305"}`
+- **Updates the dashboard** by writing the result to `partials/ai-recommendation.html` for display
+
+The system prompt guides the AI to consider recent exams, current technology trends, and logical progression paths when making recommendations. Authentication works seamlessly through GitHub Actions with the `models: read` permission, utilizing the free quota included with GitHub Copilot plans.
+
 ### Web Interface (`index.html`)
 
 The visualization component:
@@ -131,7 +145,11 @@ This workflow automatically keeps both exam and badge data current:
    python fetch_credly_badges.py "${{ secrets.CREDLY_USERNAME }}" \
      --output credly_badges.csv
    ```
-6. Commits and pushes any changes to both `passed_exams.csv` and `credly_badges.csv`
+6. Generates an AI exam recommendation using the transcript data:
+   ```bash
+   python ai_exam_recommender.py
+   ```
+7. Commits and pushes any changes to `passed_exams.csv`, `credly_badges.csv`, and `partials/ai-recommendation.html`
 
 **Repository Secrets Required:**
 - `TRANSCRIPT_CODE`: The Microsoft Learn transcript share ID
@@ -141,6 +159,7 @@ This workflow automatically keeps both exam and badge data current:
 **Permissions:**
 - `contents: write` - Allows pushing changes back to the repository
 - `actions: read` - Standard workflow permission
+- `models: read` - Enables access to GitHub Models for AI recommendations
 
 ### Azure Static Web Apps Deployment
 
@@ -208,7 +227,7 @@ To test locally:
 
 1. **Install Python dependencies:**
    ```bash
-   pip install requests
+   pip install requests openai
    ```
 
 2. **Install Node.js dependencies:**
@@ -242,12 +261,17 @@ exam-timeline/
 ├── .github/workflows/
 │   ├── update-transcript.yml          # Daily data update automation
 │   └── azure-static-web-apps-*.yml    # Azure deployment automation
+├── partials/
+│   ├── ai-recommendation.html         # AI exam recommendation output
+│   └── last-updated.html              # Last update timestamp
 ├── index.html                         # Web interface with timeline visualization
 ├── package.json                       # Node.js dependencies (plotly.js)
 ├── passed_exams.csv                   # Microsoft exam data (auto-updated)
 ├── passed_exams.py                    # Python script for Microsoft Learn data fetching
 ├── credly_badges.csv                  # Credly badge data (auto-updated)
 ├── fetch_credly_badges.py             # Python script for Credly data fetching
+├── ai_exam_recommender.py             # Python script for AI exam recommendations
+├── priority_ARB_exams.csv             # Prioritized exam list for AI recommendations
 ├── plotly.min.js                      # Plotly.js library (fallback)
 ├── .gitignore                         # Git ignore patterns
 └── README.md                          # This file
@@ -257,6 +281,7 @@ exam-timeline/
 
 **Python:**
 - `requests` - For HTTP API calls to Microsoft Learn and Credly
+- `openai` - For AI exam recommendations using GitHub Models
 - `csv` - For CSV file operations (built-in)
 - `argparse` - For command-line interface (built-in)
 
