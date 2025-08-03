@@ -256,7 +256,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-number" id="ai-recommendation">-</div>
-        <div class="stat-label">AI Recommendation</div>
+        <div class="stat-label" id="fourth-label">AI Recommendation</div>
       </div>
     </div>
   </div>
@@ -322,18 +322,21 @@
       const totalLabel = document.getElementById('total-label');
       const yearsLabel = document.getElementById('years-label');
       const recentLabel = document.getElementById('recent-label');
+      const fourthLabel = document.getElementById('fourth-label');
       
       if (dataSource === 'microsoft') {
         pageTitle.textContent = '🎓 Microsoft Exam Timeline';
         totalLabel.textContent = 'Total Exams Passed';
         yearsLabel.textContent = 'Years of Certification';
         recentLabel.textContent = 'Latest Achievement';
+        fourthLabel.textContent = 'AI Recommendation';
         document.getElementById('search-exam').placeholder = 'Search exams...';
       } else {
         pageTitle.textContent = '🏆 Credly Badge Timeline';
         totalLabel.textContent = 'Total Badges Earned';
         yearsLabel.textContent = 'Years of Achievement';
-        recentLabel.textContent = 'Latest Badge';
+        recentLabel.textContent = 'Latest Issuer';
+        fourthLabel.textContent = 'Top Issuer';
         document.getElementById('search-exam').placeholder = 'Search badges...';
       }
     }
@@ -359,12 +362,27 @@
       if (currentDataSource === 'microsoft') {
         document.getElementById('recent-exam').textContent = latestItem ? latestItem['Exam Number'] : '-';
       } else {
-        // For badges, show first few words of title if it's long
-        let badgeTitle = latestItem ? latestItem['Badge Title'] : '-';
-        if (badgeTitle.length > 15) {
-          badgeTitle = badgeTitle.substring(0, 15) + '...';
+        // For badges, show the issuer of the latest badge
+        const latestIssuer = latestItem ? latestItem['Issuer'] : '-';
+        document.getElementById('recent-exam').textContent = latestIssuer;
+        
+        // Calculate top issuer (issuer with most badges)
+        const issuerCounts = {};
+        data.forEach(item => {
+          const issuer = item['Issuer'];
+          issuerCounts[issuer] = (issuerCounts[issuer] || 0) + 1;
+        });
+        
+        let topIssuer = '-';
+        let maxCount = 0;
+        for (const [issuer, count] of Object.entries(issuerCounts)) {
+          if (count > maxCount) {
+            maxCount = count;
+            topIssuer = issuer;
+          }
         }
-        document.getElementById('recent-exam').textContent = badgeTitle;
+        
+        document.getElementById('ai-recommendation').textContent = topIssuer;
       }
     }
 
