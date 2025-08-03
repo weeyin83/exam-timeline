@@ -268,6 +268,51 @@
     let currentData = [];
     let filteredData = [];
     let currentDataSource = 'microsoft';
+    let hasExamData = false;
+    let hasBadgeData = false;
+
+    // Function to check if a CSV file exists and has data
+    async function checkDataAvailability(filename) {
+      try {
+        const response = await fetch(filename);
+        if (!response.ok) {
+          return false;
+        }
+        const csvText = await response.text();
+        const parsedData = parseCSV(csvText);
+        return parsedData.length > 0;
+      } catch (error) {
+        console.log(`Data availability check failed for ${filename}:`, error);
+        return false;
+      }
+    }
+
+    // Function to update UI based on available data sources
+    function updateUIForAvailableData() {
+      const dataSourceSelect = document.getElementById('data-source');
+      const dataSourceGroup = dataSourceSelect.parentElement;
+      
+      if (hasExamData && hasBadgeData) {
+        // Both data sources available - show dropdown (current behavior)
+        dataSourceGroup.style.display = 'flex';
+        currentDataSource = 'microsoft'; // Default to Microsoft exams
+      } else if (hasExamData && !hasBadgeData) {
+        // Only exam data available - hide dropdown, show Microsoft exams
+        dataSourceGroup.style.display = 'none';
+        currentDataSource = 'microsoft';
+      } else if (!hasExamData && hasBadgeData) {
+        // Only badge data available - hide dropdown, show Credly badges
+        dataSourceGroup.style.display = 'none';
+        currentDataSource = 'credly';
+      } else {
+        // No data available - show dropdown but with error messages
+        dataSourceGroup.style.display = 'flex';
+        currentDataSource = 'microsoft'; // Default fallback
+      }
+      
+      // Update the select value to match current data source
+      dataSourceSelect.value = currentDataSource;
+    }
 
     // Function to parse CSV data with robust quoted field handling
     function parseCSV(csvText) {
@@ -626,8 +671,9 @@
         }
         const csvText = await response.text();
         allExamData = parseCSV(csvText);
+        hasExamData = allExamData.length > 0;
         
-        if (currentDataSource === 'microsoft') {
+        if (currentDataSource === 'microsoft' && hasExamData) {
           currentData = [...allExamData];
           filteredData = [...allExamData];
           updateStats(allExamData);
@@ -641,6 +687,7 @@
         
       } catch (error) {
         console.error('Error loading exam data:', error);
+        hasExamData = false;
         
         if (currentDataSource === 'microsoft') {
           // Display error message to user
@@ -666,8 +713,9 @@
         }
         const csvText = await response.text();
         allBadgeData = parseCSV(csvText);
+        hasBadgeData = allBadgeData.length > 0;
         
-        if (currentDataSource === 'credly') {
+        if (currentDataSource === 'credly' && hasBadgeData) {
           currentData = [...allBadgeData];
           filteredData = [...allBadgeData];
           updateStats(allBadgeData);
@@ -680,6 +728,7 @@
         
       } catch (error) {
         console.error('Error loading badge data:', error);
+        hasBadgeData = false;
         
         if (currentDataSource === 'credly') {
           // Display error message to user
@@ -774,11 +823,37 @@
     }
 
     // Event listeners
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize with Microsoft exams by default
-      updatePageLabels('microsoft');
-      loadExamData();
-      loadBadgeData(); // Pre-load badge data for faster switching
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Check data availability first
+      hasExamData = await checkDataAvailability('passed_exams.csv');
+      hasBadgeData = await checkDataAvailability('credly_badges.csv');
+      
+      // Update UI based on available data
+      updateUIForAvailableData();
+      updatePageLabels(currentDataSource);
+      
+      // Load available data
+      if (hasExamData) {
+        await loadExamData();
+      }
+      if (hasBadgeData) {
+        await loadBadgeData();
+      }
+      
+      // Initialize the dashboard with the determined data source
+      if (currentDataSource === 'microsoft' && hasExamData) {
+        currentData = [...allExamData];
+        filteredData = [...allExamData];
+        updateStats(allExamData);
+        createTimelinePlot(filteredData);
+      } else if (currentDataSource === 'credly' && hasBadgeData) {
+        currentData = [...allBadgeData];
+        filteredData = [...allBadgeData];
+        updateStats(allBadgeData);
+        createTimelinePlot(filteredData);
+      }
+      
+      // Load additional components
       loadTimestamp();
       loadAIRecommendation();
       
