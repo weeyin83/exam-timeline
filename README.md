@@ -3,18 +3,20 @@
 
 
 
-A [web application](https://exams.guygregory.com) that automatically tracks and visualizes Microsoft certification exam progress over time using data from Microsoft Learn public transcripts.
+A [web application](https://exams.guygregory.com) that automatically tracks and visualizes certification progress over time using data from Microsoft Learn public transcripts and Credly digital badges.
+
+*[Placeholder for screenshot showing the dashboard with data source selector dropdown (Microsoft Exams / Credly Badges)]*
 
 ## High-Level Overview
 
 This repository creates an automated system that:
 
-1. **Fetches exam data daily** from Microsoft Learn public transcripts using a Python script
-2. **Stores the data** in a CSV file that gets automatically updated 
-3. **Visualizes the timeline** through an interactive web interface using Plotly.js
+1. **Fetches exam and badge data daily** from Microsoft Learn public transcripts and Credly public profiles using Python scripts
+2. **Stores the data** in CSV files that get automatically updated 
+3. **Visualizes the timeline** through an interactive web interface using Plotly.js with intelligent data source selection
 4. **Deploys automatically** to Azure Static Web Apps whenever changes are made
 
-The result is a live, always up-to-date timeline showing certification exam achievements with minimal manual intervention.
+The result is a live, always up-to-date timeline showing certification achievements from multiple sources (Microsoft exams, Credly badges, or both) with minimal manual intervention. The dashboard intelligently displays only the data sources where information is available.
 
 ## How It Works
 
@@ -53,16 +55,54 @@ The `share_id` is the identifier from the end of a Microsoft Learn public transc
 https://learn.microsoft.com/en-gb/users/<username>/transcript/<share_id>
 ```
 
+### Credly Badge Script (`fetch_credly_badges.py`)
+
+The Credly integration is powered by a Python script that:
+
+- **Fetches badge data** from Credly's public API endpoint:
+  ```
+  https://www.credly.com/users/{username}/badges.json
+  ```
+
+- **Extracts badge information** by parsing the JSON response for badge details including:
+  - Badge title
+  - Issuer name
+  - Date earned
+
+- **Outputs to CSV format** with columns: `Badge Title`, `Issuer`, `Badge Date`
+
+- **Handles API responses robustly** by navigating the nested JSON structure and converting dates to consistent format
+
+#### Usage
+```bash
+python fetch_credly_badges.py <username> [--output <output.csv>]
+```
+
+**Example:**
+```bash
+python fetch_credly_badges.py guygregory --output credly_badges.csv
+```
+
+The `username` can be found by logging into Credly and taking the last part of your profile URL:
+```
+https://www.credly.com/users/guygregory → username is "guygregory"
+```
+
 ### Web Interface (`index.html`)
 
 The visualization component:
 
-- **Loads exam data** from the `passed_exams.csv` file via JavaScript fetch API
+- **Loads data from multiple sources** including `passed_exams.csv` and `credly_badges.csv` via JavaScript fetch API
+- **Intelligently selects data sources** by checking data availability and:
+  - Shows a dropdown to switch between Microsoft exams and Credly badges when both are available
+  - Automatically displays Microsoft exams when only exam data is available
+  - Automatically displays Credly badges when only badge data is available
+  - Gracefully handles cases where no data is available
 - **Parses CSV data** using a custom JavaScript parser that handles quoted fields
 - **Creates interactive timeline** using Plotly.js with:
-  - Chronological sorting by exam date
+  - Chronological sorting by date
   - Color gradient mapping across the timeline
-  - Hover tooltips showing exam details
+  - Hover tooltips showing details (exam/badge information)
   - Responsive design for different screen sizes
 - **Handles errors gracefully** when CSV data cannot be loaded
 
@@ -70,7 +110,7 @@ The visualization component:
 
 ### Daily Data Updates (`update-transcript.yml`)
 
-This workflow automatically keeps the exam data current:
+This workflow automatically keeps both exam and badge data current:
 
 **Trigger:**
 - Runs daily at midnight UTC via cron schedule: `'0 0 * * *'`
@@ -80,16 +120,22 @@ This workflow automatically keeps the exam data current:
 1. Checks out the repository
 2. Sets up Python 3.12 environment
 3. Installs required dependencies (`requests` library)
-4. Runs the Python script using the `TRANSCRIPT_CODE` repository secret:
+4. Runs the Microsoft Learn script using the `TRANSCRIPT_CODE` repository secret:
    ```bash
    python passed_exams.py "${{ secrets.TRANSCRIPT_CODE }}" \
      --locale en-gb --output passed_exams.csv
    ```
-5. Commits and pushes any changes to `passed_exams.csv`
+5. Runs the Credly script using the `CREDLY_USERNAME` repository secret:
+   ```bash
+   python fetch_credly_badges.py "${{ secrets.CREDLY_USERNAME }}" \
+     --output credly_badges.csv
+   ```
+6. Commits and pushes any changes to both `passed_exams.csv` and `credly_badges.csv`
 
-**Repository Secret Required:**
+**Repository Secrets Required:**
 - `TRANSCRIPT_CODE`: The Microsoft Learn transcript share ID
-- This secret is stored as a repository secret for easy access across workflows
+- `CREDLY_USERNAME`: Your Credly username (found in your Credly profile URL)
+- Both secrets are stored as repository secrets for easy access across workflows
 
 **Permissions:**
 - `contents: write` - Allows pushing changes back to the repository
@@ -123,18 +169,27 @@ The workflow also handles pull request cleanup by closing the associated preview
 
 ### Configuration
 
-**Find Your Transcript Share ID:**
+**Find Your Microsoft Learn Transcript Share ID:**
    - Go to your Microsoft Learn profile
    - Navigate to your public transcript
    - Copy the share ID from the URL (the part after `/transcript/`)
 
-**Fork this repo into your own GitHub acccount**
-   - Brings across index.html, passed-exams.py, and GitHub Actions definitions
-   - Also includes passed-exams.csv, but this will be overwritten on by the GitHub Action
+**Find Your Credly Username:**
+   - Log into Credly
+   - Go to your profile page
+   - Copy the username from the URL (e.g., `https://www.credly.com/users/guygregory` → username is `guygregory`)
+
+**Fork this repo into your own GitHub account**
+   - Brings across index.html, Python scripts, and GitHub Actions definitions
+   - Also includes CSV data files, but these will be overwritten by the GitHub Action
 
 **Set up Repository Secrets:**
    - Navigate to your GitHub repository → Settings → Secrets and variables → Actions
    - Add repository secret: `TRANSCRIPT_CODE` with your Microsoft Learn transcript share ID
+   - Add repository secret: `CREDLY_USERNAME` with your Credly username
+   - Note: Both secrets are optional - the system will work with just one data source if only one secret is provided
+
+*[Placeholder for screenshot showing GitHub repository secrets configuration with both TRANSCRIPT_CODE and CREDLY_USERNAME secrets]*
 
 **Azure Static Web Apps Setup:**
    - Create an Azure Static Web App resource (Free tier should be fine)
@@ -159,9 +214,13 @@ To test locally:
    npm install
    ```
 
-3. **Run the Python script:**
+3. **Run the Python scripts:**
    ```bash
+   # Fetch Microsoft Learn exam data
    python passed_exams.py YOUR_SHARE_ID --output passed_exams.csv
+   
+   # Fetch Credly badge data
+   python fetch_credly_badges.py YOUR_CREDLY_USERNAME --output credly_badges.csv
    ```
 
 4. **Serve the website locally:**
@@ -183,8 +242,10 @@ exam-timeline/
 │   └── azure-static-web-apps-*.yml    # Azure deployment automation
 ├── index.html                         # Web interface with timeline visualization
 ├── package.json                       # Node.js dependencies (plotly.js)
-├── passed_exams.csv                   # Exam data (auto-updated)
-├── passed_exams.py                    # Python script for data fetching
+├── passed_exams.csv                   # Microsoft exam data (auto-updated)
+├── passed_exams.py                    # Python script for Microsoft Learn data fetching
+├── credly_badges.csv                  # Credly badge data (auto-updated)
+├── fetch_credly_badges.py             # Python script for Credly data fetching
 ├── plotly.min.js                      # Plotly.js library (fallback)
 ├── .gitignore                         # Git ignore patterns
 └── README.md                          # This file
@@ -193,7 +254,7 @@ exam-timeline/
 ## Dependencies
 
 **Python:**
-- `requests` - For HTTP API calls to Microsoft Learn
+- `requests` - For HTTP API calls to Microsoft Learn and Credly
 - `csv` - For CSV file operations (built-in)
 - `argparse` - For command-line interface (built-in)
 
