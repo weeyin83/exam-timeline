@@ -50,7 +50,7 @@ jobs:
         id: update_credly
         if: steps.update_transcript.outputs.transcript_check_successful == 'true'
         run: |
-          if python fetch_credly_badges.py "${{ vars.CREDLY_USERNAME }}" \
+          if python fetch_credly_badges.py "${{ secrets.CREDLY_USERNAME }}" \
             --output credly_badges.csv; then
             echo "credly_check_successful=true" >> $GITHUB_OUTPUT
             echo "Credly badges check completed successfully"
