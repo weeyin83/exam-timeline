@@ -5,7 +5,8 @@
 
 A [web application](https://exams.guygregory.com) that automatically tracks and visualizes certification progress over time using data from Microsoft Learn public transcripts and Credly digital badges.
 
-*[Placeholder for screenshot showing the dashboard with data source selector dropdown (Microsoft Exams / Credly Badges)]*
+<img width="411" height="143" alt="image" src="https://github.com/user-attachments/assets/cc54bb0e-6c02-4177-b93f-d6b552b275dd" />
+
 
 ## High-Level Overview
 
@@ -189,7 +190,8 @@ The workflow also handles pull request cleanup by closing the associated preview
    - Add repository secret: `CREDLY_USERNAME` with your Credly username
    - Note: Both secrets are optional - the system will work with just one data source if only one secret is provided
 
-*[Placeholder for screenshot showing GitHub repository secrets configuration with both TRANSCRIPT_CODE and CREDLY_USERNAME secrets]*
+<img width="1125" height="813" alt="image" src="https://github.com/user-attachments/assets/43188a0e-2ca3-491d-b3b7-44f27933cc09" />
+
 
 **Azure Static Web Apps Setup:**
    - Create an Azure Static Web App resource (Free tier should be fine)
