@@ -64,7 +64,13 @@ def extract_badges(badges_json: Dict) -> List[Dict[str, str]]:
     for badge in raw_badges:
         # Extract badge information
         badge_name = badge.get('badge_template', {}).get('name', '')
-        issuer_name = badge.get('badge_template', {}).get('issuer', {}).get('name', '')
+        
+        # Extract issuer name from the correct location in the JSON structure
+        issuer_entities = badge.get('issuer', {}).get('entities', [])
+        issuer_name = ''
+        if issuer_entities:
+            # Get the first entity's name (typically the primary issuer)
+            issuer_name = issuer_entities[0].get('entity', {}).get('name', '')
         
         # Extract earned date - Credly typically uses 'issued_at' or 'earned_at'
         issued_at = badge.get('issued_at', '') or badge.get('earned_at', '')
