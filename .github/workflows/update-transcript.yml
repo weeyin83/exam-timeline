@@ -46,6 +46,19 @@ jobs:
             exit 1
           fi
 
+      - name: Update Credly data
+        id: update_credly
+        if: steps.update_transcript.outputs.transcript_check_successful == 'true'
+        run: |
+          if python fetch_credly_badges.py "${{ vars.CREDLY_USERNAME }}" \
+            --output credly_badges.csv; then
+            echo "credly_check_successful=true" >> $GITHUB_OUTPUT
+            echo "Credly badges check completed successfully"
+          else
+            echo "credly_check_successful=false" >> $GITHUB_OUTPUT
+            echo "Credly badges check failed, continuing with existing data"
+          fi
+
       - name: Generate AI exam recommendation
         id: ai_recommendation
         if: steps.update_transcript.outputs.transcript_check_successful == 'true'
@@ -66,12 +79,12 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add passed_exams.csv partials/ai-recommendation.html
+          git add passed_exams.csv credly_badges.csv partials/ai-recommendation.html
           if git diff --cached --quiet; then
             echo "No changes to commit"
             echo "changes_made=false" >> $GITHUB_OUTPUT
           else
-            git commit -m "Update passed_exams.csv and AI recommendation with latest data"
+            git commit -m "Update passed_exams.csv, credly_badges.csv and AI recommendation with latest data"
             git push
             echo "changes_made=true" >> $GITHUB_OUTPUT
           fi
