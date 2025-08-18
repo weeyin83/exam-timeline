@@ -97,6 +97,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'azure-static-web-apps-purple-pond-0cdaaa710.yml',
+              workflow_id: 'azure-static-web-apps-black-water-08ae84e03.yml',
               ref: 'main'
             });
